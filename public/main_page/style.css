@@ -1,0 +1,23 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  th,
+  td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+  th:first-child,
+  td:first-child {
+    width: 3%; /* Ширина для колонки з порядковим номером */
+  }
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 17%; /* Ширина для колонки з військовим званням та ініціалами */
+  }
+  th:nth-child(3),
+  td:nth-child(3) {
+    width: 80%; /* Ширина для колонки з дисциплінарною практикою */
+  }

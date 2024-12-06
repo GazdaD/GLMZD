@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Список Військових</title>
+    <link rel="stylesheet" href="/main_page/style.css">
+  </head>
+  <body>
+    <% Object.keys(groupedData).forEach(platoon => { %>
+    <h2><%= platoon %></h2>
+    <% Object.keys(groupedData[platoon].squads).forEach(squad => { %>
+    <h3><%= squad %></h3>
+    <table>
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Військове звання та ініціали</th>
+          <th>Дисциплінарна практика</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% groupedData[platoon].squads[squad].forEach((soldier, index) => { %>
+        <tr>
+          <td><%= index + 1 %></td>
+          <td><%= soldier.rank %> <%= soldier.fullName %></td>
+          <td>
+            <% if (soldier.disciplinaryRecords.length > 0) { %> <%
+            soldier.disciplinaryRecords.forEach(record => { %>
+            <p>
+              <%= record.type %> - <%= record.description %> <br />
+              Хто видав: <%= record.issuedBy %> - <%= new
+              Date(record.date).toLocaleDateString("uk-UA", { year: 'numeric',
+              month: 'long', day: 'numeric' }) %>
+            </p>
+            <% }) %> <% } else { %>
+            <p>Немає записів</p>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% }) %> <% }) %>
+  </body>
+</html>

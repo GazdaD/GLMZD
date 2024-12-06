@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Додати Дисциплінарну Практику</title>
+    <link rel="stylesheet" href="/add_records_page/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.4/lottie.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-container">
+        <h2>Додати Дисциплінарну Практику</h2>
+        <form id="disciplinaryForm" action="/work/add" method="POST">
+          <label for="type">Тип Дисциплінарної Практики:</label>
+          <select id="type" name="type">
+            <option value="Подяка">Подяка</option>
+            <option value="Схвалення">Схвалення</option>
+            <option value="Догана">Догана</option>
+            <option value="Стягнення">Стягнення</option>
+          </select>
+
+          <label for="description">Опис:</label>
+          <textarea id="description" name="description" rows="4"></textarea>
+
+          <input type="hidden" id="selectedSoldier" name="selectedSoldier" />
+
+          <button type="submit">Додати</button>
+        </form>
+      </div>
+
+      <div class="table-container">
+        <h2>Солдати</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Повне Ім'я</th>
+              <th>Звання</th>
+              <th>Посада</th>
+              <th>Номер Роти</th>
+              <th>Номер Взводу</th>
+              <th>Номер Відділення</th>
+            </tr>
+          </thead>
+          <tbody id="soldierTableBody">
+            <% soldiers.forEach(function (soldier) { %>
+            <tr
+              class="soldier-row"
+              data-soldier="<%= JSON.stringify(soldier) %>"
+            >
+              <td><%= soldier.fullName %></td>
+              <td><%= soldier.rank %></td>
+              <td><%= soldier.position %></td>
+              <td><%= soldier.companyNumber %></td>
+              <td><%= soldier.platoonNumber %></td>
+              <td><%= soldier.squadNumber %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="lottie-container" id="successAnimation">
+      <div class="lottie-animation" id="successLottie"></div>
+    </div>
+
+    <div class="modal" id="errorModal">
+      <div class="lottie-animation" id="errorLottie"></div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const soldierRows = document.querySelectorAll(".soldier-row");
+        const selectedSoldierInput = document.getElementById("selectedSoldier");
+        const disciplinaryForm = document.getElementById("disciplinaryForm");
+        const successAnimation = document.getElementById("successAnimation");
+        const successLottie = document.getElementById("successLottie");
+        const errorModal = document.getElementById("errorModal");
+        const errorLottie = document.getElementById("errorLottie");
+        const closeModal = document.getElementById("closeModal");
+
+        soldierRows.forEach((row) => {
+          row.addEventListener("click", function () {
+            soldierRows.forEach((r) => r.classList.remove("selected"));
+            this.classList.add("selected");
+            const soldierData = this.getAttribute("data-soldier");
+            selectedSoldierInput.value = soldierData;
+          });
+        });
+
+        disciplinaryForm.addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const formData = new FormData(disciplinaryForm);
+          const jsonData = {
+            type: formData.get("type"),
+            description: formData.get("description"),
+            selectedSoldier: selectedSoldierInput.value,
+          };
+
+          fetch("/work/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(jsonData),
+          })
+            .then((response) => {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error("Network response was not ok.");
+              }
+            })
+            .then((data) => {
+              successAnimation.style.display = "flex";
+              lottie.loadAnimation({
+                container: successLottie,
+                renderer: "svg",
+                loop: false,
+                autoplay: true,
+                path: "https://lottie.host/05871c2e-b45b-4efa-a793-d7f3485f8812/5ZLcqQOfk0.json", 
+              });
+              setTimeout(() => {
+                successAnimation.style.display = "none";
+                window.location.reload(); 
+              }, 2000);
+            })
+            .catch((error) => {
+              if (!errorModal.classList.contains("show")) {
+                errorModal.classList.add("show");
+              }
+
+              let errorAnimationPath;
+              if (error.message === "Network response was not ok.") {
+                errorAnimationPath =
+                  "https://lottie.host/0e8d7655-3c5c-4ae7-94ec-28698f79270d/2H3hkohtdt.json"; 
+              } else {
+                errorAnimationPath =
+                  "https://lottie.host/0e8d7655-3c5c-4ae7-94ec-28698f79270d/another-error-animation.json"; 
+              }
+
+              errorLottie.innerHTML = "";
+
+              lottie.loadAnimation({
+                container: errorLottie,
+                renderer: "svg",
+                loop: false,
+                autoplay: true,
+                path: errorAnimationPath,
+              });
+
+              console.error("Помилка при відправці форми:", error);
+
+              setTimeout(() => {
+                errorModal.classList.remove("show");
+              }, 5000);
+            });
+        });
+
+        closeModal.addEventListener("click", function () {
+          errorModal.classList.remove("show");
+        });
+      });
+    </script>
+  </body>
+</html>

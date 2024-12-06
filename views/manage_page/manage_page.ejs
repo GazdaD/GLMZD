@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Управління військовими</title>
+    <link rel="stylesheet" href="/manage_page/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="table-container">
+        <h2>Солдати</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Повне Ім'я</th>
+              <th>Звання</th>
+              <th>Посада</th>
+              <th>Номер Підрозділу</th>
+              <th>Номер Взводу</th>
+              <th>Номер Відділення</th>
+            </tr>
+          </thead>
+          <tbody id="soldierTableBody">
+            <% soldiers.forEach(function (soldier) { %>
+            <tr
+              class="soldier-row"
+              data-soldier="<%= JSON.stringify(soldier) %>"
+            >
+              <td><%= soldier.fullName %></td>
+              <td><%= soldier.rank %></td>
+              <td><%= soldier.position %></td>
+              <td><%= soldier.companyNumber %></td>
+              <td><%= soldier.platoonNumber %></td>
+              <td><%= soldier.squadNumber %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <div class="form-container">
+        <button class="add-button" onclick="openModal()">
+          Додати Військового
+        </button>
+        <button class="delete-button" onclick="deleteSoldier()">
+          Видалити
+        </button>
+        <h2>Редагувати Військового</h2>
+        <form id="soldierForm">
+          <input
+            type="hidden"
+            id="selectedSoldierInput"
+            name="selectedSoldier"
+          />
+          <div class="form-group">
+            <label for="rank">Звання</label>
+            <input type="text" id="rank" name="rank" required />
+          </div>
+          <div class="form-group">
+            <label for="position">Посада</label>
+            <input type="text" id="position" name="position" required />
+          </div>
+          <div class="form-group">
+            <label for="fullName">Повне ім'я</label>
+            <input type="text" id="fullName" name="fullName" required />
+          </div>
+          <div class="form-group">
+            <label for="companyNumber">Номер підрозділу</label>
+            <input
+              type="text"
+              id="companyNumber"
+              name="companyNumber"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="platoonNumber">Номер взводу</label>
+            <input
+              type="text"
+              id="platoonNumber"
+              name="platoonNumber"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="squadNumber">Номер відділення</label>
+            <input type="text" id="squadNumber" name="squadNumber" required />
+          </div>
+          <button type="submit">Зберегти</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Додати Військового</h2>
+        <form id="addSoldierForm" method="POST" action="/add-soldier">
+          <div class="form-group">
+            <label for="addRank">Звання</label>
+            <input type="text" id="addRank" name="rank" required />
+          </div>
+          <div class="form-group">
+            <label for="addPosition">Посада</label>
+            <input type="text" id="addPosition" name="position" required />
+          </div>
+          <div class="form-group">
+            <label for="addFullName">Повне ім'я</label>
+            <input type="text" id="addFullName" name="fullName" required />
+          </div>
+          <div class="form-group">
+            <label for="addCompanyNumber">Номер компанії</label>
+            <input
+              type="text"
+              id="addCompanyNumber"
+              name="companyNumber"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="addPlatoonNumber">Номер підрозділу</label>
+            <input
+              type="text"
+              id="addPlatoonNumber"
+              name="platoonNumber"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="addSquadNumber">Номер відділення</label>
+            <input
+              type="text"
+              id="addSquadNumber"
+              name="squadNumber"
+              required
+            />
+          </div>
+          <button type="submit">Додати</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function openModal() {
+        const modal = document.getElementById("myModal");
+        modal.style.display = "block";
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("myModal");
+        modal.style.display = "none";
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const soldierTableBody = document.getElementById("soldierTableBody");
+        const selectedSoldierInput = document.getElementById(
+          "selectedSoldierInput"
+        );
+        const deleteButton = document.querySelector(".delete-button");
+
+        // Row selection event
+        soldierTableBody.addEventListener("click", function (event) {
+          const target = event.target;
+          const row = target.closest(".soldier-row");
+
+          if (row) {
+            const previouslySelectedRow =
+              soldierTableBody.querySelector(".selected");
+
+            if (previouslySelectedRow) {
+              previouslySelectedRow.classList.remove("selected");
+            }
+
+            row.classList.add("selected");
+            const soldier = JSON.parse(row.dataset.soldier);
+
+            selectedSoldierInput.value = soldier._id;
+            document.getElementById("rank").value = soldier.rank;
+            document.getElementById("position").value = soldier.position;
+            document.getElementById("fullName").value = soldier.fullName;
+            document.getElementById("companyNumber").value =
+              soldier.companyNumber;
+            document.getElementById("platoonNumber").value =
+              soldier.platoonNumber;
+            document.getElementById("squadNumber").value = soldier.squadNumber;
+            deleteButton.style.display = "inline-block"; // Show delete button
+          }
+        });
+
+        document
+          .getElementById("soldierForm")
+          .addEventListener("submit", function (event) {
+            event.preventDefault();
+            const soldierId = selectedSoldierInput.value;
+            const formData = new FormData(event.target);
+            const soldierData = {};
+            formData.forEach((value, key) => {
+              soldierData[key] = value;
+            });
+
+            fetch(`/manage/edit-soldier/${soldierId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(soldierData),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  location.reload(); // Reload page on successful update
+                } else {
+                  alert("Не вдалося оновити інформацію про військового.");
+                }
+              })
+              .catch((error) => {
+                console.error("Помилка при оновленні інформації:", error);
+                alert("Помилка при оновленні інформації.");
+              });
+          });
+
+        document
+          .getElementById("addSoldierForm")
+          .addEventListener("submit", function (event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const newSoldierData = {};
+            formData.forEach((value, key) => {
+              newSoldierData[key] = value;
+            });
+            newSoldierData.disciplinaryRecords = []; // Set empty array for disciplinaryRecords
+
+            fetch("/manage/add-soldier", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(newSoldierData),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  location.reload(); // Reload page on successful addition
+                } else {
+                  alert("Не вдалося додати нового військового.");
+                }
+              })
+              .catch((error) => {
+                console.error("Помилка при додаванні військового:", error);
+                alert("Помилка при додаванні військового.");
+              });
+          });
+      });
+
+      function deleteSoldier() {
+        const selectedSoldierId = document.getElementById(
+          "selectedSoldierInput"
+        ).value;
+        if (selectedSoldierId) {
+          fetch(`/manage/delete-soldier/${selectedSoldierId}`, {
+            method: "DELETE",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                location.reload(); // Reload page on successful deletion
+              } else {
+                alert("Не вдалося видалити військового.");
+              }
+            })
+            .catch((error) => {
+              console.error("Помилка при видаленні військового:", error);
+              alert("Помилка при видаленні військового.");
+            });
+        } else {
+          alert("Виберіть військового для видалення.");
+        }
+      }
+    </script>
+  </body>
+</html>
